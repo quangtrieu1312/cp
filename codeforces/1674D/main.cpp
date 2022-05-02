@@ -4,7 +4,7 @@ using namespace std;
 typedef long long ll;
 
 int t, n;
-vector<int> a;
+vector<int> a, c;
 
 int main()
 {
@@ -23,12 +23,19 @@ int main()
         }
 
         res = true;
-        for (int i=2; i<n ; i++){
-            if (a[i-2]>=a[i-1] && a[i-1]>=a[i] && a[i-2]>a[i]) {
+        int start_ind=n&1;
+        for (int i=start_ind; i<n; i+=2){
+            if (a[i]>a[i+1]){
+                int tmp=a[i];
+                a[i]=a[i+1];
+                a[i+1]=tmp;
+            }
+        }
+        for (int i=1; i<n; i++){
+            if (a[i]<a[i-1]){
                 res = false;
             }
         }
-
         if (res){
             cout << "YES\n";
         } else {
