@@ -8,41 +8,6 @@ int n;
 vector< vector<int> > cnt;
 vector< pic > right_most_pos;
 
-string secret_string="qiibspddrqbxfetjzpysuwtznhcwqzqijffebsrhktjbzysgvbvtquudyhjnsmwzcteifzkdqpoyvfbojcpbmlutzqdkoensyigrzxaifvbjaeknweabnuucwcubkizinlnbftyykqcuznqwygqfrydckqbgbfseyrkuubzoddawrdxbirxbljhyhfltljpcvxtvkvdjqnypuhbbokbwnvrjpeptdspxnorhxnkxhmumqkbamnqkpmevlwuvwatidxcjbvpiwyduqqvcqqojasbvffjoygwulmqwujyrjskqirziurjyebfqnobvjkzmjcrmwbgkyqxzxhnvfdennzoehwlyjrnqdzcbzukhwmbibrhxvlkkyxnvdystwznbvtqdmmdvbkvafdczgfxuvxrgnvnsfyxadwzjpshyvarqifrqdnwdvjcjncbxyaapikfcvhpkfwgyopsrotwibbeidmnbvirjzzbaseghyuvnsqiibspddrqbxfetjzpysuwtznhcwqzqijffebsrhktjbzysgvbvtquudyhjnsdjnczcwgaigncsspmwzcteifzkdqpoyvfbojcpbmlutzqdkoensyigrzxaifvbjaeknwbnuucwcubkizinlnbftyykqcuznqwygqfrydckqgbfseyrkuuboddawrdxbirxbljhyhfltljpcvxtvkvdjqnypuhbbokbwnvrjpeptdspxnorhxnkxhmumqkbamnqkpmevlwuvwatidxcjbvpiwyduqqvcqqojasbvffjoygwulmqwujyrjskqirziurjyebfqnobvjkzmjcrmwbgkyqxzxhnvfdennzoehwlyjrnqdzcbzukhwmbibrhxvlkkyxnvdystwznbvtqdmmdvbkvafdczgfxuvxrgnvnsfyxadwzjpshyvarqifrqdnwdvjcjncbxyaapikfcvhpkfwgyopsrotwibbeidmnbvirjzzbaseghyuvns";
-bool use_interal_jury=false;
-int q1_cnt=26;
-int q2_cnt=6000;
-
-char answer_query_1(int i){
-    i--;
-    if (i<0 || i>=secret_string.length()) return 0;
-    if (q1_cnt==0) { cout<<"!!!!!!!!!!!!! Used up q1 limit !!!!!!!!!!!! Exceeding "<<-q1_cnt<<endl;}
-    return secret_string[i];
-}
-
-int answer_query_2(int left, int right){
-    left--;
-    right--;
-    if (left>right || right<0 || left>=secret_string.length()) return 0;
-    int query_cnt[26];
-    memset(query_cnt,0,sizeof(query_cnt));
-    for (int i=left; i<=right; i++){
-        query_cnt[secret_string[i]-'a']++;
-    }
-    int ans=0;
-    for (int i=0; i<26; i++){
-        ans += ( query_cnt[i]>0 );
-    }
-    if (q2_cnt<=0){ cout<<"!!!!!!! Used up q2 limit !!!!!!!!! Exceeding "<<-q2_cnt+1<<endl;}
-    q2_cnt--;
-    return ans;
-}
-// in order to just do 1 q1 => n q2 to preprocess (aka character grouping)
-// if every group size = 1 => waste n q2 to preprocess
-// aaaa bbbb ccccccc
-// abc
-// q2 [l, r] = 1 -> r++
-// q2 [l, r] = 2 -> group(l,r-1) ; l=r; // after the for loop, we'll need to add the last (l,r-1) value to the group
 void update_right_most_pos(char letter, int val){
     int ind;
     for (int i=0; i<right_most_pos.size(); i++){
@@ -65,13 +30,7 @@ void update_right_most_pos(char letter, int val){
 char query_1(int i){
     char q1;
     cout<<"? 1 "<<i<<endl;
-    q1_cnt--;
-    if (use_interal_jury){
-        q1=answer_query_1(i);
-        cout<<"Using internal jury: "<<q1<<endl;
-    } else {
-        cin>>q1;
-    }
+    cin>>q1;
     if (q1=='0'){
         exit(0);
     }
@@ -96,12 +55,7 @@ int count_diff_char(int left, int right){
 int query_2(int left, int right){
     int q2;
     cout<<"? 2 "<<left<<" "<<right<<endl;
-    if (use_interal_jury){
-        q2=answer_query_2(left,right);
-        cout<<"Using internal jury: "<<q2<<endl;
-    } else {
-        cin>>q2;
-    }
+    cin>>q2;
     if (q2==0){
         exit(0);
     }
@@ -124,7 +78,6 @@ void binSearch(int left, int right, int i, char &ans){
         }
         return;
     }
-    char curAns;
     int mid=(left+right)/2;
     ind_letter=right_most_pos[mid];
     manual_q2=count_diff_char(ind_letter.first,i-1);
@@ -142,15 +95,7 @@ void binSearch(int left, int right, int i, char &ans){
 
 int main()
 {
-    if (use_interal_jury){
-        n=secret_string.length();
-        cout<<"Using interal jury: n="<<n<<endl;
-        cout<<secret_string<<endl;
-        cout<<"............................"<<endl;
-    } else {
-        cin>>n;
-    }
-
+    cin>>n;
     cnt.resize(0);
 
     int l=1, r=2;
@@ -169,16 +114,14 @@ int main()
     cnt[q1-'a'][1]++;
     update_right_most_pos(q1,1);
 
-
-
     for (int i=2; i<=n; i++){
         q2=query_2(1,i);
         for (int j=0; j<26; j++){
             cnt[j][i] = cnt[j][i-1];
         }
         if (count_diff_char(1,i-1)<q2){
-            //from eq_ranges[0] to eq_ranges[i-1] there is X diff chars
-            //from eq_ranges[0] to eq_ranges[i] there is X+1 diff chars
+            //from 0 to i-1 there is X diff chars
+            //from 0 to ei there is X+1 diff chars
             //=> new char encountered
             q1=query_1(i);
             res+=q1;
@@ -195,16 +138,6 @@ int main()
         }
     }
     cout<<"! "<<res<<endl;
-    if (use_interal_jury){
-        if (res!=secret_string){
-            cout<<"WRONG ANSWER!"<<endl;
-            cout<<"ans vs expect"<<endl;
-            cout<<res<<endl;
-            cout<<secret_string<<endl;
-        } else {
-            cout<<"RIGHT!!"<<endl;
-        }
-    }
     return 0;
 }
 // takes nlog(26)
