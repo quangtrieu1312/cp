@@ -22,9 +22,9 @@ Observation:
 
 Proof for observation (2):
     0. For 1 edge [x, y] we make, we're coloring every nodes inside (x,y) color A, and outside color B
-    1. node[l] and node[r] holds both colors
+    1. node[x] and node[y] holds both colors
     2. If you already have solution for X nodes, meaning no edges have 2 different colors for 2 ends
-    3. When you add a new node to the right most node, that means
+    3. When you add a new node to the right most node, that means you either picking the color of the right most node, or both of them make a new color
 
 How to build with observation (4):
     0. temporary label ids for nodes
