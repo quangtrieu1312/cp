@@ -186,11 +186,9 @@ int main()
                 d[res[i][j]]++;
             }
         }
-        if (n&1){
-            int c=0;
-            while (d[cur_head->previous->previous->val]&1!=0 && c<=cur_size){
-                //corner case: there is no 0 in the current binary string
-                c++;
+        if (n&1 && c1!=cur_size){
+            //make sure the last 2 bits is "01" unless there is no "0"
+            while (d[cur_head->previous->previous->val]&1!=0){
                 rotate_left(1);
             }
         }
@@ -243,8 +241,9 @@ int main()
                 break;
             }
         }
-
+        //fix the order
         rotate_right(offset);
+        //start giving the new id to nodes
         int cnt=1;
         it=cur_head;
         new_order[it->val]=cnt++;
