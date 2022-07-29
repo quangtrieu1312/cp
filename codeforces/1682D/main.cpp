@@ -43,6 +43,7 @@ How to build with observation (4):
 Catch for build (3):
     If you're doubling the string, and compare substring of length n, that's around O(n^2) because substring cost O(n)
     Try hashing, or z-func, or kmp
+    Or, you can choose a starting index from double_s, thus knowing the offset before hand
 */
 #include <bits/stdc++.h>
 
@@ -114,20 +115,6 @@ void free_list(){
     }
 }
 
-vector<int> z_function(string x) {
-    int n = (int) x.length();
-    vector<int> z(n);
-    for (int i = 1, l = 0, r = 0; i < n; ++i) {
-        if (i <= r)
-            z[i] = min (r - i + 1, z[i - l]);
-        while (i + z[i] < n && x[z[i]] == x[i + z[i]])
-            ++z[i];
-        if (i + z[i] - 1 > r)
-            l = i, r = i + z[i] - 1;
-    }
-    return z;
-}
-
 int main()
 {
     ios::sync_with_stdio(false);
@@ -173,28 +160,17 @@ int main()
             rotate_right(2);
         }
 
-        //now we only have at most 1 "0"
-        //start adding 0 at the correct position
-        //must ensure tail->val=1 so it's actually adding 0s
-        //to do so, we want the last 2 bits to be "01" since it can add, or rotate left
-        //as many time as we want
-        vector<int> d;
-        d.resize(n,0);
-        for (int i=0; i<n; i++){
-            for (int j=0; j<res[i].size(); j++){
-                d[i]++;
-                d[res[i][j]]++;
-            }
-        }
-        if (n&1 && c1!=cur_size){
-            //make sure the last 2 bits is "01" unless there is no "0"
-            while (d[cur_head->previous->previous->val]&1!=0){
-                rotate_left(1);
-            }
-        }
-
         string double_s=s+s;
         int offset=0;
+        //we want to make the first digit '1'
+        //because there's a corner case for first digit = '0':
+        // -> 0111..10..0
+        //the '1's are consecutive
+        //thus, we'll add '0' after c1-1 '1's
+        //then rotate left c1 times, makes the string ends with '0'
+        //then we see a '0', and we try to do (*) - that's not a valid (*)
+        //=> making the 1st digit '1' makes sure we're not rotating left c1 times
+        //=> string s always end with '1'
         while (double_s[offset]=='0') offset++;
         for (int i=offset; i<offset+n; i++){
             if (double_s[i]=='0'){
@@ -205,44 +181,9 @@ int main()
             }
         }
 
-        string cur_s="";
-        d.resize(0);
-        d.resize(n,0);
-        for (int i=0; i<n; i++){
-            for (int j=0; j<res[i].size(); j++){
-                d[i]++;
-                d[res[i][j]]++;
-            }
-        }
-
         MyBinLinkedList* it = cur_head;
-        it = cur_head;
-        if (d[it->val]&1){
-            cur_s+='1';
-        } else {
-            cur_s+='0';
-        }
-        it=it->next;
-        while (it!=cur_head){
-            if (d[it->val]&1){
-                cur_s+='1';
-            } else {
-                cur_s+='0';
-            }
-            it=it->next;
-        }
-
-        offset=0;
-        //use z-func
-        vector<int> z = z_function(cur_s+"*"+double_s);
-        for (int i=cur_s.size()+1; i<z.size(); i++){
-            if (z[i]==s.size()){
-                offset=i-s.size()-1;
-                break;
-            }
-        }
         //fix the order
-        rotate_right(offset);
+        rotate_right(offset+1);
         //start giving the new id to nodes
         int cnt=1;
         it=cur_head;
