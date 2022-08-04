@@ -1,7 +1,9 @@
 #include <bits/stdc++.h>
 
 using namespace std;
+
 int n, res;
+
 vector<int> a, x, y, adj, d, head, pos;
 vector<int> remove_nodes;
 vector<bool> visited;
@@ -134,7 +136,6 @@ int main()
         d[x[i]]++;
         d[y[i]]++;
     }
-
     for (int i=1; i<=n+1; i++){
         head[i]=head[i-1]+d[i-1];
         pos[i]=head[i];
