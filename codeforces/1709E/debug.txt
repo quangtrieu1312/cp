@@ -1,0 +1,45 @@
+Combined val of node=3
+0 
+Removing node=2 because child branch 3has dup e=0
+Current val of node=2
+0 
+Inserting 0 to node=2
+0 
+u, v = 2, 3
+0 
+Combined val of node=2
+
+u, v = 1, 2
+
+Combined val of node=8
+
+u, v = 6, 8
+
+Combined val of node=6
+
+u, v = 5, 6
+
+Combined val of node=9
+
+u, v = 7, 9
+
+Combined val of node=7
+
+u, v = 5, 7
+
+Combined val of node=5
+
+u, v = 4, 5
+
+Combined val of node=4
+
+u, v = 1, 4
+
+Combined val of node=10
+
+u, v = 1, 10
+
+Combined val of node=1
+
+1
+Expected res=1
