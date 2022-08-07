@@ -1,0 +1,14 @@
+move up at row 7=50
+move up at row 8=57
+move up at row 9=65
+move up at row 10=90
+move up at row 11=109
+move up at row 12=112
+move up at row 13=113
+move down at row 5=55
+move down at row 4=57
+move down at row 3=57
+move down at row 2=64
+move down at row 1=62
+move down at row 0=62
+Case #1: 49
