@@ -7,6 +7,7 @@ vector< vector<char> > G;
 vector< vector<int> > cnt_slot;
 ll res=0;
 int count_slot(int start_r, int start_c, int end_r, int end_c){
+    int ans=0;
     if (start_r>end_r){
         swap(start_r,end_r);
     }
@@ -14,14 +15,16 @@ int count_slot(int start_r, int start_c, int end_r, int end_c){
         swap(start_c,end_c);
     }
     if (start_r>0 && start_c>0){
-        return cnt_slot[end_r][end_c]-cnt_slot[start_r-1][end_c]-cnt_slot[end_r][start_c-1]+cnt_slot[start_r-1][start_c-1];
+        ans= cnt_slot[end_r][end_c]-cnt_slot[start_r-1][end_c]-cnt_slot[end_r][start_c-1]+cnt_slot[start_r-1][start_c-1];
     } else if (start_r==0 && start_c==0){
-        return cnt_slot[end_r][end_c];
+        ans= cnt_slot[end_r][end_c];
     } else if (start_r==0){
-        return cnt_slot[end_r][end_c]-cnt_slot[end_r][start_c-1];
+        ans= cnt_slot[end_r][end_c]-cnt_slot[end_r][start_c-1];
     } else {
-        return cnt_slot[end_r][end_c]-cnt_slot[start_r-1][end_c];
+        ans= cnt_slot[end_r][end_c]-cnt_slot[start_r-1][end_c];
     }
+    //cout<<"count slot from ("<<start_r<<", "<<start_c<<") to ("<<end_r<<", "<<end_c<<") = "<<ans<<endl;
+    return ans;
 }
 int main()
 {
@@ -78,7 +81,7 @@ int main()
                 //move row i-th up to be row K
                 tmp+=i-K;
                 res=min(res,tmp);
-                cout<<"move up at row "<<i<<"="<<tmp<<endl;
+                //cout<<"move up at row "<<i<<"="<<tmp<<endl;
             }
         }
         //find row K-X to move down
@@ -96,8 +99,35 @@ int main()
                 //move row i-th down to be row K
                 tmp+=K-i;
                 res=min(res,tmp);
-                cout<<"move down at row "<<i<<"="<<tmp<<endl;
+                //cout<<"move down at row "<<i<<"="<<tmp<<endl;
             }
+        }
+        //catch: we may want to move up/down first, then clear row K
+        for (int i=1; i<=R-K; i++){
+            ll tmp=i;
+            for (int j=1; j<=C; j++){
+                //debugcnt=count_slot(K-1,j,1,j);
+                if (count_slot(K+i,j,1,j)<=i || G[K+i][j]=='X'){
+                    //after moving up "i" times, this G[K][j] = 'X'
+                    //thus, we need to remove it
+                    tmp++;
+                }
+            }
+            //cout<<"Moving up "<<i<<" times="<<tmp<<endl;
+            res=min(res,tmp);
+        }
+        for (int i=1; i<=K-1; i++){
+            ll tmp=i;
+            for (int j=1; j<=C; j++){
+                //debugcnt=count_slot(K+1,j,R,j);
+                if (count_slot(K-i,j,R,j)<=i || G[K-i][j]=='X'){
+                    //after moving down "i" times, this G[K][j] = 'X'
+                    //thus, we need to remove it
+                    tmp++;
+                }
+            }
+            //cout<<"Moving down "<<i<<" times="<<tmp<<endl;
+            res=min(res,tmp);
         }
         cout<<"Case #"<<casenum<<": "<<res<<endl;
     }
