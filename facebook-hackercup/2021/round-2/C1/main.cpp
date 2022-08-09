@@ -67,43 +67,8 @@ int main()
         }
         //init res val = remove all cars in K
         res=C-count_slot(K,1,K,C);
-        //find row K+X to move up
-        if (K!=1){
-            ll tmp=0;
-            for (int i=K+1; i<=R+1; i++){
-                tmp=C-count_slot(i,1,i,C);
-                for (int j=1; j<=C; j++){
-                    if (count_slot(i-1,j,1,j)<i-K){
-                        //if we don't have enough upper slots for this column, remove the cars
-                        tmp+=i-K-count_slot(i-1,j,1,j);
-                    }
-                }
-                //move row i-th up to be row K
-                tmp+=i-K;
-                res=min(res,tmp);
-                //cout<<"move up at row "<<i<<"="<<tmp<<endl;
-            }
-        }
-        //find row K-X to move down
-        if (K!=R){
-            ll tmp=0;
-            for (int i=K-1; i>=0; i--){
-                tmp=C-count_slot(i,1,i,C);
-                for (int j=1; j<=C; j++){
-                    int debug1=count_slot(i+1,j,R,j);
-                    if (count_slot(i+1,j,R,j)<K-i){
-                        //if we don't have enough lower slots for this column, remove the cars
-                        tmp+=K-i-count_slot(i+1,j,R,j);
-                    }
-                }
-                //move row i-th down to be row K
-                tmp+=K-i;
-                res=min(res,tmp);
-                //cout<<"move down at row "<<i<<"="<<tmp<<endl;
-            }
-        }
-        //catch: we may want to move up/down first, then clear row K
-        for (int i=1; i<=R-K; i++){
+        //we want to move up/down first, then clear row K
+        for (int i=1; i<=R-K+1; i++){
             ll tmp=i;
             for (int j=1; j<=C; j++){
                 //debugcnt=count_slot(K-1,j,1,j);
@@ -116,7 +81,7 @@ int main()
             //cout<<"Moving up "<<i<<" times="<<tmp<<endl;
             res=min(res,tmp);
         }
-        for (int i=1; i<=K-1; i++){
+        for (int i=1; i<=K; i++){
             ll tmp=i;
             for (int j=1; j<=C; j++){
                 //debugcnt=count_slot(K+1,j,R,j);

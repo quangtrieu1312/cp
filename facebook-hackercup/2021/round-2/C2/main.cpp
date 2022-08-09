@@ -1,34 +1,67 @@
 #include <bits/stdc++.h>
-
 using namespace std;
 typedef long long ll;
 int T, R, C, K, S;
 vector<int> A, B;
 vector< vector<char> > G;
-vector< vector<int> > cnt_slot;
+vector< vector<int> > tree;
+
 ll res=0, sumres=0;
-int count_slot(int start_r, int start_c, int end_r, int end_c){
-    int ans=0;
-    if (start_r>end_r){
-        swap(start_r,end_r);
+bool buildTreeStrip(int strip, int node, int left, int right){
+    if (left>right){
+        return false;
     }
-    if (start_c>end_c){
-        swap(start_c,end_c);
+    if (left==right){
+        tree[strip][node]=(G[left][strip]=='.');
+        return true;
     }
-    if (start_r>0 && start_c>0){
-        ans= cnt_slot[end_r][end_c]-cnt_slot[start_r-1][end_c]-cnt_slot[end_r][start_c-1]+cnt_slot[start_r-1][start_c-1];
-    } else if (start_r==0 && start_c==0){
-        ans= cnt_slot[end_r][end_c];
-    } else if (start_r==0){
-        ans= cnt_slot[end_r][end_c]-cnt_slot[end_r][start_c-1];
+    bool hasLeft = buildTreeStrip(strip,node*2,left,(left+right)/2);
+    bool hasRight = buildTreeStrip(strip,node*2+1,(left+right)/2+1,right);
+    if (hasLeft && hasRight){
+        tree[strip][node]=tree[strip][node*2]+tree[strip][node*2+1];
+    } else if (hasLeft){
+        tree[strip][node]=tree[strip][node*2];
+    } else if (hasRight){
+        tree[strip][node]=tree[strip][node*2+1];
     } else {
-        ans= cnt_slot[end_r][end_c]-cnt_slot[start_r-1][end_c];
+        return false;
     }
-    //cout<<"count slot from ("<<start_r<<", "<<start_c<<") to ("<<end_r<<", "<<end_c<<") = "<<ans<<endl;
-    return ans;
+    return true;
+}
+int queryTreeStrip(int strip, int node, int left, int right, int left_q, int right_q){
+    if (left>right || right_q<left || right<left_q){
+        return 0;
+    }
+    if (left_q<=left && right<=right_q){
+        return tree[strip][node];
+    }
+    return  queryTreeStrip(strip,node*2,left,(left+right)/2,left_q,right_q)
+            +queryTreeStrip(strip,node*2+1,(left+right)/2+1,right,left_q,right_q);
+}
+
+bool updateTreeStrip(int strip, int node, int left, int right, int ind, int val){
+    if (left>right || ind<left || right<ind){
+        return false;
+    }
+    if (left==right && right==ind){
+        return tree[strip][node]=val;
+    }
+    bool hasLeft = updateTreeStrip(strip,node*2,left,(left+right)/2,ind,val);
+    bool hasRight = updateTreeStrip(strip,node*2+1,(left+right)/2+1,right,ind,val);
+    if (hasLeft && hasRight){
+        tree[strip][node]=tree[strip][node*2]+tree[strip][node*2+1];
+    } else if (hasLeft){
+        tree[strip][node]=tree[strip][node*2];
+    } else if (hasRight){
+        tree[strip][node]=tree[strip][node*2+1];
+    } else {
+        return false;
+    }
+    return true;
 }
 int main()
 {
+    ios_base::sync_with_stdio(false);
     freopen("input.txt","r",stdin);
     freopen("output.txt","w",stdout);
     cin>>T;
@@ -41,6 +74,8 @@ int main()
                 cin>>G[i][j];
             }
         }
+        A.resize(0);
+        B.resize(0);
         A.resize(S);
         B.resize(S);
         for (int i=0; i<S; i++){
@@ -54,88 +89,58 @@ int main()
             G[0][j]='.';
             G[R+1][j]='.';
         }
-        cnt_slot.resize(0);
-        cnt_slot.resize(R+2,vector<int>(C+2,0));
-        for (int i=0; i<R+2; i++){
-            for (int j=0; j<C+2; j++){
-                if (i==0 && j==0){
-                    cnt_slot[i][j]=(G[i][j]=='.');
-                } else if (i==0){
-                    cnt_slot[i][j]=cnt_slot[i][j-1]+(G[i][j]=='.');
-                } else if (j==0){
-                    cnt_slot[i][j]=cnt_slot[i-1][j]+(G[i][j]=='.');
-                } else {
-                    cnt_slot[i][j]=cnt_slot[i-1][j]+cnt_slot[i][j-1]-cnt_slot[i-1][j-1]+(G[i][j]=='.');
-                }
-                //cout<<cnt_slot[i][j]<<" ";
-            }
-            //cout<<endl;
+        tree.resize(0);
+        tree.resize(C+2,vector<int>(4*(R+2),0));
+        for (int j=0; j<=C+1; j++){
+            buildTreeStrip(j,1,0,R+1);
         }
-        //init res val = remove all cars in K
-        res=C-count_slot(K,1,K,C);
-        //find row K+X to move up
-        if (K!=1){
-            ll tmp=0;
-            for (int i=K+1; i<=R+1; i++){
-                tmp=C-count_slot(i,1,i,C);
+
+        sumres=0;
+        for (int s=0; s<S; s++){
+            if (G[A[s]][B[s]]=='X'){
+                G[A[s]][B[s]]='.';
+            } else {
+                G[A[s]][B[s]]='X';
+            }
+            int val=(G[A[s]][B[s]]=='.');
+            updateTreeStrip(B[s],1,0,R+1,A[s],val);
+            //init res val = remove all cars in K
+            res=0;
+            for (int i=1; i<=C; i++){
+                if (G[K][i]=='X'){
+                    res++;
+                }
+            }
+            ll debugcnt;
+            for (int i=1; i<=R-K+1; i++){
+                ll tmp=i;
                 for (int j=1; j<=C; j++){
-                    if (count_slot(i-1,j,1,j)<i-K){
-                        //if we don't have enough upper slots for this column, remove the cars
-                        tmp+=i-K-count_slot(i-1,j,1,j);
+                    //debugcnt=queryTreeStrip(j,1,0,R+1,1,K+i;
+                    if (queryTreeStrip(j,1,0,R+1,1,K+i)<=i || G[K+i][j]=='X'){
+                        //after moving up "i" times, this G[K][j] = 'X'
+                        //thus, we need to remove it
+                        tmp++;
                     }
                 }
-                //move row i-th up to be row K
-                tmp+=i-K;
+                //cout<<"Moving up "<<i<<" times="<<tmp<<endl;
                 res=min(res,tmp);
-                //cout<<"move up at row "<<i<<"="<<tmp<<endl;
             }
-        }
-        //find row K-X to move down
-        if (K!=R){
-            ll tmp=0;
-            for (int i=K-1; i>=0; i--){
-                tmp=C-count_slot(i,1,i,C);
+            for (int i=1; i<=K; i++){
+                ll tmp=i;
                 for (int j=1; j<=C; j++){
-                    int debug1=count_slot(i+1,j,R,j);
-                    if (count_slot(i+1,j,R,j)<K-i){
-                        //if we don't have enough lower slots for this column, remove the cars
-                        tmp+=K-i-count_slot(i+1,j,R,j);
+                    //debugcnt=queryTreeStrip(j,1,0,R+1,K-i,R);
+                    if (queryTreeStrip(j,1,0,R+1,K-i,R)<=i || G[K-i][j]=='X'){
+                        //after moving down "i" times, this G[K][j] = 'X'
+                        //thus, we need to remove it
+                        tmp++;
                     }
                 }
-                //move row i-th down to be row K
-                tmp+=K-i;
+                //cout<<"Moving down "<<i<<" times="<<tmp<<endl;
                 res=min(res,tmp);
-                //cout<<"move down at row "<<i<<"="<<tmp<<endl;
             }
+            //cout<<"DEBUG M["<<s<<"]="<<res<<endl;
+            sumres+=res;
         }
-        //catch: we may want to move up/down first, then clear row K
-        for (int i=1; i<=R-K; i++){
-            ll tmp=i;
-            for (int j=1; j<=C; j++){
-                //debugcnt=count_slot(K-1,j,1,j);
-                if (count_slot(K+i,j,1,j)<=i || G[K+i][j]=='X'){
-                    //after moving up "i" times, this G[K][j] = 'X'
-                    //thus, we need to remove it
-                    tmp++;
-                }
-            }
-            //cout<<"Moving up "<<i<<" times="<<tmp<<endl;
-            res=min(res,tmp);
-        }
-        for (int i=1; i<=K-1; i++){
-            ll tmp=i;
-            for (int j=1; j<=C; j++){
-                //debugcnt=count_slot(K+1,j,R,j);
-                if (count_slot(K-i,j,R,j)<=i || G[K-i][j]=='X'){
-                    //after moving down "i" times, this G[K][j] = 'X'
-                    //thus, we need to remove it
-                    tmp++;
-                }
-            }
-            //cout<<"Moving down "<<i<<" times="<<tmp<<endl;
-            res=min(res,tmp);
-        }
-        sumres+=res;
         cout<<"Case #"<<casenum<<": "<<sumres<<endl;
     }
     return 0;
