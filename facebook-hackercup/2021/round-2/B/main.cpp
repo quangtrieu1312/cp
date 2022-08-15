@@ -48,9 +48,7 @@ void dfs(int start){
     }
     cur_depth++;
     for (int i=head[start]; i<head[start+1]; i++){
-
         if (!visited[adj[i]]){
-            cout<<start<<" "<<adj[i]<<endl;
             dfs(adj[i]);
             rmq.push_back(cur_depth-1);
             if (F_pos_v[F[start]].size()<2){
