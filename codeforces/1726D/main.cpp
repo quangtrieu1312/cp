@@ -72,7 +72,7 @@ int main()
             }
         }
 
-        if (cntNodes(reds)==3 && reds.size()==3){
+        if (false && cntNodes(reds)==3 && reds.size()==3){
             // there is a loop
             bool ok=false;
             for (int i=0; i<reds.size() && !ok; i++){
