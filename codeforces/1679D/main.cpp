@@ -20,17 +20,19 @@ int main()  {
     v.resize(m);
     u.resize(m);
 
-
     for (int i=0; i<m; i++){
         cin>>u[i]>>v[i];
         d[u[i]]++;
     }
+
     for (int i=1; i<=n+1; i++){
         head[i]=head[i-1]+d[i-1];
         pos[i]=head[i];
     }
+
     for (int i=0; i<m; i++){
         adj[pos[u[i]]++]=v[i];
     }
+
     return 0;
 }
