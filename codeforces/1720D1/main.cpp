@@ -5,6 +5,7 @@ int t, n, res;
 vector<int> a, dp;
 int main()
 {
+    ios_base::sync_with_stdio(false);
     cin>>t;
     while (t--){
         cin>>n;
