@@ -1,13 +1,19 @@
 #include <bits/stdc++.h>
-#define MODULO 1000000007
+#define MODULO 99999999999999997L
 using namespace std;
 typedef long long ll;
 int T;
 int N;
-vector<ll> A;
-ll Q, L, R;
+vector<ll> A, L, R;
+vector<int> type;
+map<ll, ll> m;
+set<ll> new_val;
+ll Q;
 ll res;
+vector<ll> primes{1000000007L, 1000000009L, 1000075057L, 99999999999999997L};
+
 vector<ll> xortree, sumtree, prodtree;
+
 bool buildXorTree(int node, int l, int r){
     if (l>r){
         return false;
@@ -145,8 +151,26 @@ ll queryProdTree(int node, int l, int r, int lq, int rq){
     ll rightQuery=queryProdTree(node*2+1,(l+r)/2+1,r,lq,rq);
     return (leftQuery*rightQuery)%MODULO;
 }
+ll rand(ll l, ll r){
+  static mt19937
+  rng(chrono::steady_clock::now().time_since_epoch().count());
 
+  uniform_int_distribution<ll> ludo(l, r);
+  return ludo(rng);
+}
+
+ll hashThis(ll x, ll pr){
+    if (m.find(x)!=m.end()) return m[x];
+    ll hashed = (x*(rand()%pr))%pr;
+    while (new_val.count(hashed)!=0){
+        hashed = (x*(rand(0,pr)))%pr;
+    }
+    m[x]=hashed;
+    new_val.insert(hashed);
+    return m[x];
+}
 int main(){
+    ios::sync_with_stdio(false);
     freopen("perfectly_balanced_chapter_2_input.txt","r",stdin);
     freopen("output.txt","w",stdout);
     cin>>T;
@@ -157,69 +181,78 @@ int main(){
         for (int i=0; i<N; i++){
             cin>>A[i];
         }
-        xortree.resize(0);
-        sumtree.resize(0);
-        prodtree.resize(0);
-        xortree.resize(4*N);
-        sumtree.resize(4*N);
-        prodtree.resize(4*N);
-        buildXorTree(1,0,N-1);
-        buildSumTree(1,0,N-1);
-        buildProdTree(1,0,N-1);
         cin>>Q;
-        int type;
-        res=0;
-        int top=1;
+        type.resize(Q);
+        L.resize(Q);
+        R.resize(Q);
         for (int i=0; i<Q; i++){
-            cin>>type>>L>>R;
-            if (type==1){
-                updateXorTree(1,0,N-1,L-1,R);
-                updateSumTree(1,0,N-1,L-1,R);
-                updateProdTree(1,0,N-1,L-1,R);
-            } else {
-                L--;
-                R--;
-                if ((R-L+1)%2==0){
-                    continue;
-                }
-                //cout<<"Query "<<top++<<endl;
-                //for (int i=L; i<=R; i++){
-                //    cout<<A[i]<<" ";
-                //}
-                //cout<<endl;
-                //if the whole range is almost palindrome
-                //-> need to obmit 1 ele to make XOR range = 0
-                //   and sum 1st half = sum 2nd half
-                ll diff=queryXorTree(1,0,N-1,L,R);
-                ll leftsum, rightsum, leftprod, rightprod;
-                //try remove left
-                int mid=(L+R)/2;
-                leftsum=querySumTree(1,0,N-1,L,mid);
-                rightsum=querySumTree(1,0,N-1,mid+1,R);
-                leftprod=queryProdTree(1,0,N-1,L,mid);
-                rightprod=queryProdTree(1,0,N-1,mid+1,R);
-                if (leftsum-rightsum==diff && leftprod==(rightprod*diff)%MODULO){
-                    //cout<<"Remove left: "<<diff<<endl<<"sum: "<<leftsum<<" "<<rightsum<<endl<<"prod: "<<leftprod<<" "<<rightprod<<endl;
-                    //cout<<L+1<<" "<<R+1<<endl;
-                    //cout<<"----------------"<<endl;
-                    res++;
-                    continue;;
-                }
-                //try remove right
-                leftsum=querySumTree(1,0,N-1,L,mid-1);
-                rightsum=querySumTree(1,0,N-1,mid,R);
-                leftprod=queryProdTree(1,0,N-1,L,mid-1);
-                rightprod=queryProdTree(1,0,N-1,mid,R);
-                if (rightsum-leftsum==diff && rightprod==(leftprod*diff)%MODULO){
-                    //cout<<"Remove right: "<<diff<<endl<<"sum: "<<leftsum<<" "<<rightsum<<endl<<"prod: "<<leftprod<<" "<<rightprod<<endl;
-                    //cout<<L+1<<" "<<R+1<<endl;
-                    //cout<<"----------------"<<endl;
-                    res++;
-                    continue;
+            cin>>type[i]>>L[i]>>R[i];
+        }
+        vector<bool> query_is_not_ok;
+        query_is_not_ok.resize(0);
+        query_is_not_ok.resize(Q,false);
+        res=0;
+        for (int pr=0; pr<primes.size(); pr++){
+            m.clear();
+            new_val.clear();
+            for (int i=0; i<N; i++){
+                A[i]=hashThis(A[i],primes[pr]);
+            }
+            xortree.resize(0);
+            sumtree.resize(0);
+            prodtree.resize(0);
+            xortree.resize(4*N);
+            sumtree.resize(4*N);
+            prodtree.resize(4*N);
+            buildXorTree(1,0,N-1);
+            buildSumTree(1,0,N-1);
+            buildProdTree(1,0,N-1);
+            for (int i=0; i<Q; i++){
+                if (type[i]==1){
+                    updateXorTree(1,0,N-1,L[i]-1,hashThis(R[i],primes[pr]));
+                    updateSumTree(1,0,N-1,L[i]-1,hashThis(R[i],primes[pr]));
+                    updateProdTree(1,0,N-1,L[i]-1,hashThis(R[i],primes[pr]));
+                } else {
+                    L[i]--;
+                    R[i]--;
+                    if ((R[i]-L[i]+1)%2==0){
+                        continue;
+                    }
+                    //if the whole range is almost palindrome
+                    //-> need to obmit 1 ele to make XOR range = 0
+                    //   and sum 1st half = sum 2nd half
+                    ll diff=queryXorTree(1,0,N-1,L[i],R[i]);
+                    ll leftsum, rightsum, leftprod, rightprod;
+                    //try remove left
+                    int mid=(L[i]+R[i])/2;
+                    leftsum=querySumTree(1,0,N-1,L[i],mid);
+                    rightsum=querySumTree(1,0,N-1,mid+1,R[i]);
+                    leftprod=queryProdTree(1,0,N-1,L[i],mid);
+                    rightprod=queryProdTree(1,0,N-1,mid+1,R[i]);
+                    bool ok=false;
+                    if (leftsum-rightsum==diff && leftprod==(rightprod*diff)%MODULO){
+                        ok=true;
+                    }
+                    //try remove right
+                    leftsum=querySumTree(1,0,N-1,L[i],mid-1);
+                    rightsum=querySumTree(1,0,N-1,mid,R[i]);
+                    leftprod=queryProdTree(1,0,N-1,L[i],mid-1);
+                    rightprod=queryProdTree(1,0,N-1,mid,R[i]);
+                    if (rightsum-leftsum==diff && rightprod==(leftprod*diff)%MODULO){
+                        ok=true;
+                    }
+                    if (!ok){
+                        query_is_not_ok[i]=true;
+                    }
                 }
             }
         }
-
+        res=0;
+        for (int i=0; i<query_is_not_ok.size(); i++){
+            if (!query_is_not_ok[i] && type[i]==2){
+                res++;
+            }
+        }
         cout<<"Case #"<<casenum<<": "<<res<<endl;
     }
     return 0;
