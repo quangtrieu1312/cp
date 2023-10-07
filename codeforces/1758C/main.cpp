@@ -7,13 +7,17 @@ vector<int> prime_v;
 
 void getPrimeFactors(int x){
     prime_v.resize(0);
-    while (p[x]!=-1){
-        prime_v.push_back(p[x]);
-        while (x%p[x]==0){
-            x/=p[x];
+    int cur_p;
+    while (x!=1 && p[x]!=-1){
+        cur_p=p[x];
+        prime_v.push_back(cur_p);
+        while (x%cur_p==0){
+            x/=cur_p;
         }
     }
-    prime_v.push_back(x);
+    if (x!=1){
+        prime_v.push_back(x);
+    }
 }
 void initEratosthenes(){
     p.resize(0);
@@ -27,6 +31,7 @@ void initEratosthenes(){
     for (int i=2; i<sqrt(NMAX)+1; i++){
         if (p[i]!=-1) continue;
         for (int j=i; j*i<NMAX; j++){
+            if (p[i*j]!=-1) continue;
             p[i*j]=i;
         }
     }
@@ -54,7 +59,7 @@ int main()
         int tmp=n/x;
         if (a[0]!=n){
             getPrimeFactors(tmp);
-            while (i!=n-1 && prime_i<prime_v.size()){
+            while (tmp!=1){
                 a[i]=prv*prime_v[prime_i];
                 tmp/=prime_v[prime_i];
                 if (tmp%prime_v[prime_i]!=0){
@@ -79,5 +84,8 @@ int main()
 5 4
 
 1
-4 2
+7 7
+
+1
+8 2
 */

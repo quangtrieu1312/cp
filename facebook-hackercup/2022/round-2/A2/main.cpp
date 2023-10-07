@@ -10,7 +10,7 @@ map<ll, ll> m;
 set<ll> new_val;
 ll Q;
 ll res;
-vector<ll> primes{1000000007L, 1000000009L, 1000075057L, 99999999999999997L};
+vector<ll> primes{2, 3};
 
 vector<ll> xortree, sumtree, prodtree;
 
@@ -151,19 +151,12 @@ ll queryProdTree(int node, int l, int r, int lq, int rq){
     ll rightQuery=queryProdTree(node*2+1,(l+r)/2+1,r,lq,rq);
     return (leftQuery*rightQuery)%MODULO;
 }
-ll rand(ll l, ll r){
-  static mt19937
-  rng(chrono::steady_clock::now().time_since_epoch().count());
-
-  uniform_int_distribution<ll> ludo(l, r);
-  return ludo(rng);
-}
 
 ll hashThis(ll x, ll pr){
     if (m.find(x)!=m.end()) return m[x];
     ll hashed = (x*(rand()%pr))%pr;
     while (new_val.count(hashed)!=0){
-        hashed = (x*(rand(0,pr)))%pr;
+        hashed = (x*(rand()%pr))%pr;
     }
     m[x]=hashed;
     new_val.insert(hashed);
