@@ -1,2 +1,2 @@
-test_input.txt
+substantial_losses_input.txt
 output.txt
