@@ -1,7 +1,1 @@
-bin/*
-obj/*
-*.exe
-*.o
-*.layout
-*.depend
-*.cbp
+main
